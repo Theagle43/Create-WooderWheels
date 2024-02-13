@@ -1,0 +1,10 @@
+Manifest-Version: 1.0
+Specification-Title: create_wooderwheels
+Specification-Vendor: 
+Specification-Version: 1
+Implementation-Title: Create_WooderWheels
+Implementation-Version: 1.0-SNAPSHOT
+Implementation-Vendor: 
+Implementation-Timestamp: 2024-02-12T20:08:58-0700
+MixinConfigs: create_wooderwheels.mixins.json
+

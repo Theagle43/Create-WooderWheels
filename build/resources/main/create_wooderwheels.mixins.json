@@ -1,0 +1,14 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "com.iylo.create_wooderwheels.mixin",
+  "compatibilityLevel": "JAVA_8",
+  "refmap": "Create_WooderWheels.refmap.json",
+  "mixins": [
+  ],
+  "client": [
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}
