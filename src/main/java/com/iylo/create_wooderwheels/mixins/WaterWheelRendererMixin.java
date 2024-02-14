@@ -11,6 +11,7 @@ import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.core.Direction;
+import net.minecraft.locale.Language;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.ItemTags;
@@ -25,6 +26,9 @@ import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Overwrite;
 import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import java.util.Map;
 
@@ -56,21 +60,23 @@ public abstract class WaterWheelRendererMixin<T extends WaterWheelBlockEntity> e
         super(context);
     }
 
-    /**
-     * @author iylo
-     * @reason Compatibility with non-Vanilla wood types.
-     */
-    @Overwrite
-    public static BakedModel generateModel(BakedModel template, BlockState planksBlockState) {
+
+    @Inject(method = "generateModel(Lnet/minecraft/client/resources/model/BakedModel;Lnet/minecraft/world/level/block/state/BlockState;)Lnet/minecraft/client/resources/model/BakedModel;", at = @At("TAIL"), cancellable = true)
+    private static void onGenerateModel(BakedModel template, BlockState planksBlockState, CallbackInfoReturnable<BakedModel> cir) {
         Block planksBlock = planksBlockState.getBlock();
         ResourceLocation id = RegisteredObjects.getKeyOrThrow(planksBlock);
         ItemStack planksStack = new ItemStack(planksBlock.asItem());
         TagKey<Item> planksTag = ItemTags.PLANKS;
         String namespace = id.getNamespace();
+        Language lang = Language.getInstance();
+
         //DEBUG: logger.info("Plank namespace is " + namespace);
 
         if (planksStack.is(planksTag)) {
-            String planksName = planksStack.getDisplayName().getString().strip().toLowerCase();
+            String planksName = planksStack.getDisplayName()
+                    .getString()
+                    .strip()
+                    .toLowerCase();
             String wood = planksName.replace(" planks", "")
                     .replace(" ", "_")
                     .replace("[", "")
@@ -83,10 +89,8 @@ public abstract class WaterWheelRendererMixin<T extends WaterWheelBlockEntity> e
             map.put(OAK_LOG_TEMPLATE.get(), getSpriteOnSide(logBlockState, Direction.SOUTH));
             map.put(OAK_LOG_TOP_TEMPLATE.get(), getSpriteOnSide(logBlockState, Direction.UP));
 
-            return BakedModelHelper.generateModel(template, map::get);
+            cir.setReturnValue(BakedModelHelper.generateModel(template, map::get));
         }
-
-        return BakedModelHelper.generateModel(template, sprite -> null);
     }
 
     /**
