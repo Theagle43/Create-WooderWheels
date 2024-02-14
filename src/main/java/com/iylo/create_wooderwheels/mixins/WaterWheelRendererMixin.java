@@ -21,11 +21,12 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.registries.ForgeRegistries;
-import org.spongepowered.asm.mixin.*;
+import org.spongepowered.asm.mixin.Final;
+import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Overwrite;
+import org.spongepowered.asm.mixin.Shadow;
 
 import java.util.Map;
-
-import static com.iylo.create_wooderwheels.Create_WooderWheels.logger;
 
 @Mixin(value = WaterWheelRenderer.class, remap = false)
 public abstract class WaterWheelRendererMixin<T extends WaterWheelBlockEntity> extends KineticBlockEntityRenderer<T> {
@@ -66,7 +67,7 @@ public abstract class WaterWheelRendererMixin<T extends WaterWheelBlockEntity> e
         ItemStack planksStack = new ItemStack(planksBlock.asItem());
         TagKey<Item> planksTag = ItemTags.PLANKS;
         String namespace = id.getNamespace();
-        logger.info("Plank namespace is " + namespace);
+        //DEBUG: logger.info("Plank namespace is " + namespace);
 
         if (planksStack.is(planksTag)) {
             String planksName = planksStack.getDisplayName().getString().strip().toLowerCase();
@@ -118,7 +119,7 @@ public abstract class WaterWheelRendererMixin<T extends WaterWheelBlockEntity> e
                     if (logWood.equals(wood)) {
                         logBlock = block;
                         ResourceLocation id = RegisteredObjects.getKeyOrThrow(logBlock);
-                        logger.info("Log namespace is " + id.getNamespace());
+                        //DEBUG: logger.info("Log namespace is " + id.getNamespace());
                         String logNamespace = id.getNamespace();
                         if(logNamespace.equals(namespace)) {
                             return logBlock.defaultBlockState();

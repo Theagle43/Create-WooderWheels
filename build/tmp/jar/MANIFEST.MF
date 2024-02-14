@@ -1,10 +1,10 @@
 Manifest-Version: 1.0
 Specification-Title: create_wooderwheels
-Specification-Vendor: 
+Specification-Vendor: iylo
 Specification-Version: 1
 Implementation-Title: Create_WooderWheels
-Implementation-Version: 1.0-SNAPSHOT
-Implementation-Vendor: 
-Implementation-Timestamp: 2024-02-13T20:07:18-0700
+Implementation-Version: 1.18.2-1.0.0
+Implementation-Vendor: iylo
+Implementation-Timestamp: 2024-02-13T20:13:14-0700
 MixinConfigs: create_wooderwheels.mixins.json
 
