@@ -3,8 +3,8 @@ Specification-Title: create_wooderwheels
 Specification-Vendor: iylo
 Specification-Version: 1
 Implementation-Title: Create_WooderWheels
-Implementation-Version: 1.18.2-1.0.0
+Implementation-Version: 1.18.2-1.1.0
 Implementation-Vendor: iylo
-Implementation-Timestamp: 2024-02-14T12:13:49-0700
+Implementation-Timestamp: 2024-02-14T13:08:10-0700
 MixinConfigs: create_wooderwheels.mixins.json
 

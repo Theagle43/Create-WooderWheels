@@ -11,7 +11,6 @@ import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.core.Direction;
-import net.minecraft.locale.Language;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.ItemTags;
@@ -19,12 +18,10 @@ import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.registries.ForgeRegistries;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Overwrite;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -43,6 +40,10 @@ public abstract class WaterWheelRendererMixin<T extends WaterWheelBlockEntity> e
     private static TextureAtlasSprite getSpriteOnSide(BlockState state, Direction side) {
         return null;
     }
+    @Shadow
+    private static BlockState getLogBlockState(String namespace, String wood){
+        return null;
+    }
 
     @Shadow
     @Final
@@ -52,37 +53,25 @@ public abstract class WaterWheelRendererMixin<T extends WaterWheelBlockEntity> e
     @Final
     public static StitchedSprite OAK_LOG_TOP_TEMPLATE;
 
-    @Shadow
-    @Final
-    private static String[] LOG_SUFFIXES;
-
     public WaterWheelRendererMixin(BlockEntityRendererProvider.Context context) {
         super(context);
     }
 
-
     @Inject(method = "generateModel(Lnet/minecraft/client/resources/model/BakedModel;Lnet/minecraft/world/level/block/state/BlockState;)Lnet/minecraft/client/resources/model/BakedModel;", at = @At("TAIL"), cancellable = true)
     private static void onGenerateModel(BakedModel template, BlockState planksBlockState, CallbackInfoReturnable<BakedModel> cir) {
         Block planksBlock = planksBlockState.getBlock();
+        planksBlock.getDescriptionId();
         ResourceLocation id = RegisteredObjects.getKeyOrThrow(planksBlock);
         ItemStack planksStack = new ItemStack(planksBlock.asItem());
         TagKey<Item> planksTag = ItemTags.PLANKS;
         String namespace = id.getNamespace();
-        Language lang = Language.getInstance();
+        String planksPath = id.getPath();
 
         //DEBUG: logger.info("Plank namespace is " + namespace);
 
         if (planksStack.is(planksTag)) {
-            String planksName = planksStack.getDisplayName()
-                    .getString()
-                    .strip()
-                    .toLowerCase();
-            String wood = planksName.replace(" planks", "")
-                    .replace(" ", "_")
-                    .replace("[", "")
-                    .replace("]", "");
 
-            BlockState logBlockState = getLogBlockState(namespace, wood);
+            BlockState logBlockState = getLogBlockState(namespace, planksPath);
 
             Map<TextureAtlasSprite, TextureAtlasSprite> map = new Reference2ReferenceOpenHashMap<>();
             map.put(OAK_PLANKS_TEMPLATE.get(), getSpriteOnSide(planksBlockState, Direction.UP));
@@ -93,46 +82,24 @@ public abstract class WaterWheelRendererMixin<T extends WaterWheelBlockEntity> e
         }
     }
 
-    /**
-     * @author iylo
-     * @reason Compatibility with non-Vanilla woods
-     */
-
-
-    @Overwrite
-    private static BlockState getLogBlockState(String namespace, String wood) {
-        Block logBlock;
+    @Inject(method = "getLogBlockState", at=@At("TAIL"), cancellable = true)
+    private static void onGetLogBlockState(String namespace, String planksPath, CallbackInfoReturnable<BlockState> cir) {
         TagKey<Block> logsTag = BlockTags.LOGS;
         Object[] blockList = ForgeRegistries.BLOCKS.tags().getTag(logsTag).stream().toArray();
+        String[] logPathMarkers = new String[]{"log","stem"};
         //DEBUG: logger.info("There are " + blockList.length + " Blocks in the blockList!");
         for (Object object : blockList) {
-            Block block = (Block) object;
-            ItemStack logStack = new ItemStack(block.asItem());
-            String logName = logStack.getDisplayName().getString().strip().toLowerCase();
-            //DEBUG: logger.info("logName is " + logName);
-            for (String suffix : LOG_SUFFIXES) {
-                //DEBUG: logger.info("suffix is " + suffix);
-                try {
-                    String logWood = logName
-                            .replace(" ", "_")
-                            .replace("[", "")
-                            .replace("]", "");
-                    logWood = logWood.replace(suffix, "");
-                    //DEBUG: logger.info("logWood is " + logWood);
-                    //DEBUG: logger.info("wood is " + wood);
-                    if (logWood.equals(wood)) {
-                        logBlock = block;
-                        ResourceLocation id = RegisteredObjects.getKeyOrThrow(logBlock);
-                        //DEBUG: logger.info("Log namespace is " + id.getNamespace());
-                        String logNamespace = id.getNamespace();
-                        if(logNamespace.equals(namespace)) {
-                            return logBlock.defaultBlockState();
-                        }
-                    }
-                } catch (Exception ignored) {
+            Block logBlock = (Block) object;
+            ResourceLocation id = RegisteredObjects.getKeyOrThrow(logBlock);
+            String path = id.getPath();
+            String logNamespace = id.getNamespace();
+            for(String marker : logPathMarkers){
+                String logPath = planksPath.replace("planks", marker);
+                if(path.equals(logPath) && logNamespace.equals(namespace)){
+                    cir.setReturnValue(logBlock.defaultBlockState());
+                    return;
                 }
             }
         }
-        return Blocks.OAK_LOG.defaultBlockState();
     }
 }
